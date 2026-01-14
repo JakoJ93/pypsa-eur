@@ -270,7 +270,7 @@ https://conda.anaconda.org/conda-forge/noarch/google-auth-2.47.0-pyhcf101f3_0.co
 https://conda.anaconda.org/conda-forge/noarch/proto-plus-1.27.0-pyhd8ed1ab_0.conda#1099a038989e7f4037d3ce21e8ee9f2c
 https://conda.anaconda.org/conda-forge/noarch/google-api-core-2.29.0-pyhd8ed1ab_0.conda#7fd8158ff94ccf28a2ac1f534989d698
 https://conda.anaconda.org/conda-forge/noarch/google-cloud-core-2.5.0-pyhd8ed1ab_0.conda#862b63f7548be0c97e9c6f4f85959189
-https://conda.anaconda.org/conda-forge/noarch/google-cloud-storage-3.7.0-pyhcf101f3_0.conda#9a4ab0a7b2c5362e9530b03cf563820b
+https://conda.anaconda.org/conda-forge/noarch/google-cloud-storage-3.8.0-pyhcf101f3_0.conda#d05f7e8724ceb2a77edf3e39cc7760bb
 https://conda.anaconda.org/conda-forge/noarch/deprecation-2.1.0-pyh9f0ad1d_0.tar.bz2#7b6747d7cc2076341029cff659669e8b
 https://conda.anaconda.org/conda-forge/noarch/locket-1.0.0-pyhd8ed1ab_0.tar.bz2#91e27ef3d05cc772ce627e51cff111c4
 https://conda.anaconda.org/conda-forge/noarch/partd-1.4.2-pyhd8ed1ab_0.conda#0badf9c54e24cecfb0ad2f99d680c163
@@ -348,7 +348,7 @@ https://conda.anaconda.org/conda-forge/noarch/websocket-client-1.9.0-pyhd8ed1ab_
 https://conda.anaconda.org/conda-forge/win-64/winpty-0.4.3-4.tar.bz2#1cee351bf20b830d991dbe0bc8cd7dfe
 https://conda.anaconda.org/conda-forge/win-64/pywinpty-2.0.15-py313h5813708_1.conda#8f01ed27e2baa455e753301218e054fd
 https://conda.anaconda.org/conda-forge/noarch/terminado-0.18.1-pyh6dadd2b_1.conda#e43ca10d61e55d0a8ec5d8c62474ec9e
-https://conda.anaconda.org/conda-forge/noarch/send2trash-2.0.0-pyh6dadd2b_0.conda#40df72e963d80a403c1861ae9428b13c
+https://conda.anaconda.org/conda-forge/noarch/send2trash-2.1.0-pyh6dadd2b_0.conda#69ba308f1356f39901f5654d82405df3
 https://conda.anaconda.org/conda-forge/win-64/libsodium-1.0.20-hc70643c_0.conda#198bb594f202b205c7d18b936fa4524f
 https://conda.anaconda.org/conda-forge/win-64/zeromq-4.3.5-h5bddc39_9.conda#a6c8f8ee856f7c3c1576e14b86cd8038
 https://conda.anaconda.org/conda-forge/win-64/pyzmq-27.1.0-py312hbb5da91_0.conda#808d263ec97bbd93b41ca01552b5fbd4
