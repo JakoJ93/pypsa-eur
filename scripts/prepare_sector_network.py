@@ -4970,19 +4970,15 @@ def add_industry(
                 lifetime=costs.at["waste CHP CC", "lifetime"],
             )
 
-    # TODO simplify bus expression
+    central_heat_bus = nodes + " urban central heat"
+    services_heat_bus = nodes + " services urban decentral heat"
+    bus = central_heat_bus.where(central_heat_bus.isin(n.buses.index), services_heat_bus)
+
     n.add(
         "Load",
         nodes,
         suffix=" low-temperature heat for industry",
-        bus=[
-            (
-                node + " urban central heat"
-                if node + " urban central heat" in n.buses.index
-                else node + " services urban decentral heat"
-            )
-            for node in nodes
-        ],
+        bus=bus,
         carrier="low-temperature heat for industry",
         p_set=industrial_demand.loc[nodes, "low-temperature heat"] / nhours,
     )
