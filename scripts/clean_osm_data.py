@@ -1578,7 +1578,7 @@ def _extend_lines_to_substations(gdf_lines, gdf_substations_polygon, tol=BUS_TOL
 
 def _check_if_ways_in_multi(list, longer_list):
     # Check if any of the elements in list are in longer_list
-    return any([x in longer_list for x in list])
+    return any(x in longer_list for x in list)
 
 
 if __name__ == "__main__":

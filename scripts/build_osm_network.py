@@ -783,12 +783,12 @@ def _remove_loops_from_multiline(multiline):
         else [multiline]
     )
 
-    if not any([line.is_closed for line in elements_initial]):
+    if not any(line.is_closed for line in elements_initial):
         return multiline
 
     elements = elements_initial
     iteration_count = 0
-    while any([line.is_closed for line in elements]) and iteration_count < 5:
+    while any(line.is_closed for line in elements) and iteration_count < 5:
         elements = [line for line in elements if not line.is_closed]
         geometry_updated = linemerge(elements)
 
@@ -799,7 +799,7 @@ def _remove_loops_from_multiline(multiline):
         )
         iteration_count += 1
 
-        if not any([line.is_closed for line in elements]):
+        if not any(line.is_closed for line in elements):
             break
 
     return geometry_updated
