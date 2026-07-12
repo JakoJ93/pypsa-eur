@@ -1,0 +1,30 @@
+# SPDX-License-Identifier: CC0-1.0
+#
+# M0 smoke test config for PyPSA-Eur v2026.02.0.
+# Cheapest possible end-to-end build->solve DAG proof on this box.
+# Layered on top of config.yaml (Snakefile always loads config.yaml, then this).
+# Germany-only, 5 clusters, 1-week slice at daily resolution, 2030, electricity-only.
+# Replaces the old config.simple.yaml, which was removed upstream at v2026.02.0 and
+# carried old-schema keys (enable.retrieve_databundle, snapshots.closed/step,
+# clustering.solver_name) that no longer validate.
+
+countries:
+- DE
+
+scenario:
+  clusters:
+  - 5
+  planning_horizons:
+  - 2030
+
+snapshots:
+  start: "2013-01-01"
+  end: "2013-01-08"        # 1-week winter slice
+  inclusive: 'left'
+
+clustering:
+  temporal:
+    resolution_elec: 24h    # daily resolution -> ~7 snapshots, trivial solve
+
+atlite:
+  nprocesses: 4             # lower to avoid memory pressure on a single node

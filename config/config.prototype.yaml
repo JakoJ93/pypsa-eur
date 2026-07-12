@@ -1,0 +1,43 @@
+# SPDX-License-Identifier: CC0-1.0
+#
+# M1 prototype config for PyPSA-Eur v2026.02.0 — "walking skeleton" DE-focused build.
+# Layered on top of config.yaml (Snakefile always loads config.yaml first, then this).
+# Keep config.yaml untouched as the eventual full-build config.
+#
+# Scope (PROTOTYPE_PLAN.md M1): ~20 nodes with DE concentration, 2-week hourly slice, 2030.
+#
+# NOTE: the plan's literal "20 clusters + all 34 countries" is infeasible — PyPSA-Eur needs
+# >=1 cluster per country (distribute_n_clusters_to_countries asserts n_clusters >= n_groups),
+# and 20 < 34. To hit "~20 nodes / ~10 DE", we restrict to DE + its electrical neighbours
+# (border flows retained, per RESEARCH_DESIGN §3). Full build will use all countries at a
+# higher cluster count.
+
+countries:
+- DE
+- FR
+- BE
+- NL
+- LU
+- DK
+- PL
+- CZ
+- AT
+- CH
+
+scenario:
+  clusters:
+  - 20
+  planning_horizons:
+  - 2030
+
+snapshots:
+  start: "2013-01-01"
+  end: "2013-01-15"          # ~2-week winter slice
+  inclusive: 'left'
+
+clustering:
+  mode: busmap
+  focus_weights:
+    DE: 0.5                   # ~10 of 20 nodes in DE
+  temporal:
+    resolution_elec: false    # native hourly, no tsam (per M1 scope)

@@ -326,22 +326,39 @@ def distribute_n_clusters_to_countries(
         f"Country weights L must sum up to 1.0 when distributing clusters. Is {L.sum()}."
     )
 
-    m = linopy.Model()
-    clusters = m.add_variables(
-        lower=1, upper=N, coords=[L.index], name="n", integer=True
-    )
-    m.add_constraints(clusters.sum() == n_clusters, name="tot")
-    # leave out constant in objective (L * n_clusters) ** 2
-    m.objective = (clusters * clusters - 2 * clusters * L * n_clusters).sum()
-    if solver_name == "gurobi":
-        logging.getLogger("gurobipy").propagate = False
-    elif solver_name not in ["scip", "cplex", "xpress", "copt", "mosek"]:
-        logger.info(
-            f"The configured solver `{solver_name}` does not support quadratic objectives. Falling back to `scip`."
+    QP_SOLVERS = ["gurobi", "cplex", "xpress", "copt", "mosek"]
+    if solver_name in QP_SOLVERS:
+        if solver_name == "gurobi":
+            logging.getLogger("gurobipy").propagate = False
+        m = linopy.Model()
+        clusters = m.add_variables(
+            lower=1, upper=N, coords=[L.index], name="n", integer=True
         )
-        solver_name = "scip"
-    m.solve(solver_name=solver_name)
-    return m.solution["n"].to_series().astype(int)
+        m.add_constraints(clusters.sum() == n_clusters, name="tot")
+        # leave out constant in objective (L * n_clusters) ** 2
+        m.objective = (clusters * clusters - 2 * clusters * L * n_clusters).sum()
+        m.solve(solver_name=solver_name)
+        return m.solution["n"].to_series().astype(int)
+
+    # --- LOCAL PATCH (Paper-1 prototype, 2026-07) --------------------------------
+    # No QP-capable solver is available here (Gurobi license expired; linopy's SCIP
+    # and HiGHS backends reject this quadratic objective). The distribution problem
+    #   min_n  sum_c (n_c - L_c * K)^2   s.t.  sum_c n_c = K,  1 <= n_c <= N_c, integer
+    # (K = n_clusters) is separable and convex, so greedy marginal allocation from the
+    # lower bounds reaches the exact same optimum a QP/MIQP solver would return.
+    # Documented in docs/PROTOTYPE_RESULTS.md.
+    logger.info(
+        f"Solver `{solver_name}` cannot handle the quadratic cluster-distribution "
+        "objective; using exact solver-free apportionment instead."
+    )
+    targets = (L * n_clusters).to_numpy()
+    upper = N.to_numpy().astype(int)
+    n_alloc = np.ones(len(L), dtype=int)  # lower bound of 1 per (country, sub_network)
+    for _ in range(int(n_clusters) - int(n_alloc.sum())):
+        marginal = 2 * (n_alloc - targets) + 1  # increase in (n - target)^2 for n -> n+1
+        marginal[n_alloc >= upper] = np.inf      # respect per-group upper bound N_c
+        n_alloc[int(np.argmin(marginal))] += 1
+    return pd.Series(n_alloc, index=L.index).astype(int)
 
 
 def busmap_for_n_clusters(
