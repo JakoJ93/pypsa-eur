@@ -1,0 +1,91 @@
+# SPDX-License-Identifier: CC0-1.0
+#
+# Full Paper 1 build config — DE-focused MEDIUM resolution, PyPSA-Eur v2026.02.0.
+# Layered on config.yaml (Snakefile loads config.yaml first, then this --configfile).
+# See docs/BUILD_PLAN.md + docs/ASSUMPTIONS.md (§A structure LOCKED).
+#
+# European set MINUS Kosovo (XK). XK has no synthetic-load fallback and gappy 2013
+# ENTSO-E data → build_electricity_demand NaN assertion. XK is a tiny non-neighbour,
+# negligible for the German grid (see ASSUMPTIONS A3). n_clusters (128) >= 33 countries.
+countries:
+- AL
+- AT
+- BA
+- BE
+- BG
+- CH
+- CZ
+- DE
+- DK
+- EE
+- ES
+- FI
+- FR
+- GB
+- GR
+- HR
+- HU
+- IE
+- IT
+- LT
+- LU
+- LV
+- ME
+- MK
+- NL
+- "NO"          # quote — bare NO is YAML boolean false
+- PL
+- PT
+- RO
+- RS
+- SE
+- SI
+- SK
+
+scenario:
+  clusters:
+  - 128                       # ASSUMPTIONS A4 medium (~100-150); scale up for final
+  planning_horizons:
+  - 2030
+
+snapshots:
+  start: "2013-01-01"
+  end: "2014-01-01"           # full weather year 2013
+  inclusive: 'left'
+
+clustering:
+  mode: busmap
+  focus_weights:
+    DE: 0.6                   # ~77 of 128 nodes in DE (target ~60-90)
+  temporal:
+    resolution_elec: false    # native hourly network; time aggregation applied at
+                              # the solve step (tsam / snapshot-weighting), per A7
+
+# ---------------------------------------------------------------------------
+# B4  Fleet retirement (ASSUMPTIONS §B4)
+# ---------------------------------------------------------------------------
+# Keep only power plants that are STILL OPERATING in 2030:
+#   DateOut >= 2030  →  plant has not retired before 2030
+#   DateOut != DateOut  →  DateOut is NaN (no planned retirement date, i.e. open-ended)
+# Together these two conditions form: "operating in 2030 or indefinitely".
+# Additionally exclude German nuclear (already mandated off by 2023):
+#   not (Country == 'Germany' and Fueltype == 'Nuclear')
+# Effect: coal + lignite plants with DateOut < 2030 are filtered OUT,
+# enforcing the Kohleausstieg (coal phase-out law).
+electricity:
+  powerplants_filter: "(DateOut >= 2030 or DateOut != DateOut) and not (Country == 'Germany' and Fueltype == 'Nuclear')"
+
+# ---------------------------------------------------------------------------
+# B7  Demand scaling to 2030 (ASSUMPTIONS §B7)
+# ---------------------------------------------------------------------------
+# The base network uses 2013 ENTSO-E demand data.
+# By 2030 electrification (EVs, heat pumps, industrial electrification) lifts
+# total electricity demand by ~12% above 2013 levels (EEG scenario studies).
+# scaling_factor multiplies every country's load profile uniformly.
+# SENSITIVITY: ±5pp (see ASSUMPTIONS §B7).
+load:
+  scaling_factor: 1.12
+
+# transmission_limit: vopt, extendable Generator+Store, CO2 budget, and the
+# 34-country set all inherit from config.yaml. RES policy floors (A5/B3) and the
+# Gurobi solver options are applied in the paper1 solve step, not the network build.

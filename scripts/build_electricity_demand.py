@@ -314,12 +314,6 @@ if __name__ == "__main__":
         synthetic_load = synthetic_load.loc[snapshots, countries]
         load = load.combine_first(synthetic_load)
 
-    assert not load.isna().any().any(), (
-        "Load data contains nans. Adjust the parameters "
-        "`time_shift_for_large_gaps` or modify the `manual_adjustment` function "
-        "for implementing the needed load data modifications."
-    )
-
     fixed_year = snakemake.params["load"].get("fixed_year", False)
     years = (
         slice(str(fixed_year), str(fixed_year))
@@ -332,5 +326,14 @@ if __name__ == "__main__":
     # need to reindex load time series to target year
     if fixed_year:
         load.index = load.index.map(lambda t: t.replace(year=snapshots.year[0]))
+
+    # PATCH (DC-Optimizer): assert AFTER slicing to the output snapshots. Upstream
+    # asserted on the full multi-year `load`, tripping on NaNs in years that are
+    # never output (e.g. BA zeros propagated across years by repeat_years) while
+    # the target snapshot year is clean. Only the written window must be NaN-free.
+    assert not load.isna().any().any(), (
+        "Load data contains nans in the output snapshots. Adjust "
+        "`time_shift_for_large_gaps` or the `manual_adjustment` function."
+    )
 
     load.to_csv(snakemake.output[0])
