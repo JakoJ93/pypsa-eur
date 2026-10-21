@@ -52,6 +52,9 @@ electricity:
     # gives about 49 GW PV in DE instead of about 90 GW (memo T-39A).
     from_irenastat: true
     year: 2024
+  # Existing large batteries from powerplantmatching (home storage is not in
+  # the data; batteries stay extendable).
+  estimate_battery_capacities: true
   # Existing plants in operation in 2025 that are still running in 2030
   # (ANNAHMEN B4: DateOut >= 2030).
   powerplants_filter: "(DateOut >= 2030 or DateOut != DateOut) and (DateIn < 2026 or DateIn != DateIn)"
