@@ -24,7 +24,10 @@ if __name__ == "__main__":
     configure_logging(snakemake)
     set_scenario_config(snakemake)
 
-    df = pd.read_csv(snakemake.input["csv"], parse_dates=True, index_col=0)["price"]
+    # DC paper patch: the unversioned Instrat API now puts `volume` first, so
+    # select the date column by name instead of position.
+    df = pd.read_csv(snakemake.input["csv"])
+    df = df.set_index(pd.to_datetime(df["date"], utc=True))["price"].sort_index()
 
     rolling_window = snakemake.params["rolling_window"]
 

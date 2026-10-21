@@ -296,13 +296,15 @@ def distribute_n_clusters_to_countries(
             "The sum of focus weights must be less than or equal to 1."
         )
 
+        # DC paper patch: assign via explicit masks; label/bool-list assignment
+        # on the MultiIndex left the weights summing to the focus share only.
+        countries_l = L.index.get_level_values("country")
         for country, weight in focus_weights.items():
-            L[country] = weight / len(L[country])
+            mask = countries_l == country
+            L.loc[mask] = weight / mask.sum()
 
-        remainder = [
-            c not in focus_weights.keys() for c in L.index.get_level_values("country")
-        ]
-        L[remainder] = L.loc[remainder].pipe(normed) * (1 - total_focus)
+        remainder = ~countries_l.isin(list(focus_weights.keys()))
+        L.loc[remainder] = L.loc[remainder].pipe(normed) * (1 - total_focus)
         L.index.name = "cluster"
         logger.warning("Using custom focus weights for determining number of clusters.")
 

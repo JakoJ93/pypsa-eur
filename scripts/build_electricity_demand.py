@@ -328,10 +328,17 @@ if __name__ == "__main__":
         else slice(snapshots[0], snapshots[-1])
     )
 
-    load = load.loc[years].reindex(index=snapshots)
-
-    # need to reindex load time series to target year
+    # DC paper patch: map the fixed year onto the snapshot year *before*
+    # reindexing (upstream reindexed first, which left only NaNs), and drop
+    # 29 February when the fixed year is a leap year.
+    load = load.loc[years]
     if fixed_year:
+        load = load[~((load.index.month == 2) & (load.index.day == 29))]
         load.index = load.index.map(lambda t: t.replace(year=snapshots.year[0]))
+    load = load.reindex(index=snapshots)
+
+    assert not load.isna().any().any(), (
+        "Load data contains nans in the output snapshots (check `fixed_year`)."
+    )
 
     load.to_csv(snakemake.output[0])
