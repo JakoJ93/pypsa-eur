@@ -312,14 +312,13 @@ if __name__ == "__main__":
         synthetic_load = pd.read_csv(fn, index_col=0, parse_dates=True)
         # UA, MD, XK, CY, MT do not appear in synthetic load data
         countries = list(set(countries) - set(["UA", "MD", "XK", "CY", "MT"]))
-        synthetic_load = synthetic_load.loc[snapshots, countries]
+        # DC paper patch: the synthetic data do not cover every year (e.g. 2024);
+        # supplement only where available, the final NaN check catches the rest.
+        synthetic_load = synthetic_load.reindex(index=snapshots, columns=countries)
         load = load.combine_first(synthetic_load)
 
-    assert not load.isna().any().any(), (
-        "Load data contains nans. Adjust the parameters "
-        "`time_shift_for_large_gaps` or modify the `manual_adjustment` function "
-        "for implementing the needed load data modifications."
-    )
+    # DC paper patch: no NaN check on the full multi-year series here (years
+    # that are never output may contain gaps); checked after slicing below.
 
     fixed_year = snakemake.params["load"].get("fixed_year", False)
     years = (
