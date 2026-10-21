@@ -100,6 +100,12 @@ dc_paper:
     enable: true
     max_project_build_year: 2024
     freeze_expansion: true
+  fleet:
+    # Lignite must-run in the base year as in PyPSA-DE (config.de.yaml
+    # must_run: 2025: DE: lignite: 0.2); generation itself stays free.
+    country: DE
+    must_run:
+      lignite: 0.2
 
 solving:
   options:

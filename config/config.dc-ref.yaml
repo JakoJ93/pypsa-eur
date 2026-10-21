@@ -133,6 +133,11 @@ dc_paper:
     capacity_gw:
       coal: 8.0
       lignite: 9.0
+    # No new single-axis tracking PV in DE (German PV is mostly fixed rooftop
+    # and ground-mounted; the model picked 50 TWh of it in run v3). No lignite
+    # must-run in 2030, as in PyPSA-DE (must-run only in its base year 2025).
+    no_new_build:
+    - solar-hsat
   res_floors:
     # Policy targets as minimum installed capacity in DE (ANNAHMEN A5, B3).
     enable: true

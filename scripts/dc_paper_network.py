@@ -93,9 +93,33 @@ def cap_country_fleet(n: pypsa.Network, cfg: dict) -> None:
         )
 
 
+def set_country_must_run(n: pypsa.Network, cfg: dict) -> None:
+    """Minimum dispatch share for existing plants (PyPSA-DE `must_run`, base year)."""
+    country = cfg["country"]
+    in_c = n.generators.bus.map(n.buses.country) == country
+    for carrier, p_min in cfg.get("must_run", {}).items():
+        gens = n.generators.index[in_c & (n.generators.carrier == carrier)]
+        n.generators.loc[gens, "p_min_pu"] = p_min
+        logger.info(f"DC paper fleet: {country} {carrier} must-run p_min_pu = {p_min}.")
+
+
+def block_country_new_build(n: pypsa.Network, cfg: dict) -> None:
+    """No new capacity of the given carriers in one country (existing stays)."""
+    country = cfg["country"]
+    in_c = n.generators.bus.map(n.buses.country) == country
+    for carrier in cfg.get("no_new_build", []):
+        gens = n.generators.index[
+            in_c & (n.generators.carrier == carrier) & n.generators.p_nom_extendable
+        ]
+        n.generators.loc[gens, "p_nom_max"] = n.generators.loc[gens, "p_nom_min"]
+        logger.info(f"DC paper fleet: no new {carrier} in {country} ({len(gens)} generators).")
+
+
 def apply_dc_paper_network_rules(n: pypsa.Network, horizon: int, cfg: dict) -> None:
     apply_grid_build_years(n, horizon, cfg.get("grid", {}))
     if cfg.get("demand"):
         scale_country_load(n, cfg["demand"])
     if cfg.get("fleet"):
         cap_country_fleet(n, cfg["fleet"])
+        set_country_must_run(n, cfg["fleet"])
+        block_country_new_build(n, cfg["fleet"])
