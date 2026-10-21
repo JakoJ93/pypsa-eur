@@ -43,6 +43,9 @@ clustering:
   temporal:
     # Uniform 3-hourly averaging, as in the PyPSA-group studies (T-32).
     averaging: 3h
+  # Plant-specific efficiencies instead of one value per carrier (as in
+  # config/examples/config.validation.yaml).
+  consider_efficiency_classes: true
 
 electricity:
   estimate_renewable_capacities:
@@ -77,6 +80,23 @@ load:
   # Load profile and level of 2024 (latest full year in the ENTSO-E data),
   # mapped onto the 2013 weather-year snapshots; contains today's data centres.
   fixed_year: 2024
+
+# Bias correction of the weather-to-power conversion, calibrated on the 2024
+# backcast (T-41): factor = (actual / modelled generation) / (mean / year-end
+# capacity), actual from AGEB 2024 (offshore incl. curtailed energy).
+renewable:
+  onwind:
+    correction_factor: 0.84
+  offwind-ac:
+    correction_factor: 0.67
+  offwind-dc:
+    correction_factor: 0.67
+  offwind-float:
+    correction_factor: 0.67
+  solar:
+    correction_factor: 0.89
+  solar-hsat:
+    correction_factor: 0.89
 
 transmission_projects:
   # Planned HVDC links enter with their project capacity once built

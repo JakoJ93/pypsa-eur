@@ -35,6 +35,9 @@ clustering:
     DE: 0.4
   temporal:
     averaging: 3h
+  # Plant-specific efficiencies instead of one value per carrier (as in
+  # config/examples/config.validation.yaml).
+  consider_efficiency_classes: true
 
 # No CO2 cap: emissions are priced with the historical EUA price instead.
 co2_budget:
@@ -58,10 +61,25 @@ electricity:
     from_irenastat: true
     year: 2024
 
+# Bias correction of the weather-to-power conversion, calibrated on the 2024
+# backcast (T-41): factor = (actual / modelled generation) / (mean / year-end
+# capacity), actual from AGEB 2024 (offshore incl. curtailed energy).
 renewable:
   hydro:
     flatten_dispatch: true
     flatten_dispatch_buffer: 0.01
+  onwind:
+    correction_factor: 0.84
+  offwind-ac:
+    correction_factor: 0.67
+  offwind-dc:
+    correction_factor: 0.67
+  offwind-float:
+    correction_factor: 0.67
+  solar:
+    correction_factor: 0.89
+  solar-hsat:
+    correction_factor: 0.89
 
 conventional:
   dynamic_fuel_price: true
