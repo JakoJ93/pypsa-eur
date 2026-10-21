@@ -392,6 +392,7 @@ def add_projects(
     plan,
     status=["confirmed", "under construction"],
     skip=[],
+    max_build_year=None,
 ):
     lines_dict = get_project_files(path, skip=skip)
     for key, lines in lines_dict.items():
@@ -400,6 +401,16 @@ def add_projects(
         if isinstance(status, dict):
             status = status[plan]
         lines = lines.loc[lines.project_status.isin(status)]
+        # DC paper patch: drop projects built after the horizon here, before
+        # simplification and clustering merge them into existing corridors.
+        if max_build_year is not None and "build_year" in lines:
+            late = lines.build_year > max_build_year
+            if late.any():
+                logger.info(
+                    f"Dropping {late.sum()} {key.replace('_', ' ')} from {plan} "
+                    f"with build_year > {max_build_year}."
+                )
+            lines = lines.loc[~late]
         if lines.empty:
             continue
         if key == "new_lines":
@@ -513,6 +524,9 @@ if __name__ == "__main__":
                 plan=project,
                 status=transmission_projects["status"],
                 skip=transmission_projects["skip"],
+                max_build_year=snakemake.config.get("dc_paper", {})
+                .get("grid", {})
+                .get("max_project_build_year"),
             )
         )
     if not new_lines_df.empty:

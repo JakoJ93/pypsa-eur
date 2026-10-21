@@ -13,17 +13,19 @@
 run:
   name: dc-ref
 
-# Brownfield from today's stock: myopic foresight with 2030 as the base year,
-# i.e. the existing fleet (as of 2025) that survives to 2030 plus endogenous
-# new capacity at 2030 costs. A 2025 step was dropped: it would need a
-# realistic 2025 CO2 constraint and adds little for 2030 (memo gate 3).
+# Brownfield 2030 from today's stock, overnight: the existing fleet (in
+# operation by 2025, still running in 2030) enters as fixed capacity
+# (conventional) or as lower bound of the expansion (renewables, gas); new
+# capacity at 2030 costs. Myopic electricity-only was tried first, but in
+# v2026.09.0 add_existing_baseyear builds the conventional fleet as sector
+# links without fuel buses and needs heat inputs (memo gate 3, deviation).
+foresight: overnight
+planning_horizons:
+- 2030
+
 # Electricity-only (memo gate 2). The v2026.09.0 default is sector-coupled.
 sector:
   enabled: false
-
-foresight: myopic
-planning_horizons:
-- 2030
 
 # Weather year 2013: PyPSA-Eur default and the year most PyPSA studies use;
 # a second weather year comes as robustness (T-26).
@@ -43,6 +45,13 @@ clustering:
     averaging: 3h
 
 electricity:
+  estimate_renewable_capacities:
+    enable: true
+    from_powerplantmatching: true
+    # Top up to the IRENASTAT 2024 country totals; powerplantmatching alone
+    # gives about 49 GW PV in DE instead of about 90 GW (memo T-39A).
+    from_irenastat: true
+    year: 2024
   # Existing plants in operation in 2025 that are still running in 2030
   # (ANNAHMEN B4: DateOut >= 2030).
   powerplants_filter: "(DateOut >= 2030 or DateOut != DateOut) and (DateIn < 2026 or DateIn != DateIn)"
@@ -69,6 +78,9 @@ dc_paper:
   grid:
     # Projects with build_year after the horizon are inactive (PyPSA-DE rule).
     enable: true
+    # Drop planned projects built after 2030 before clustering (otherwise
+    # clustering merges them into existing corridors).
+    max_project_build_year: 2030
     # No endogenous grid expansion in the reference; expansion is a sensitivity.
     freeze_expansion: true
   demand:

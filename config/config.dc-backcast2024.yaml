@@ -80,6 +80,7 @@ transmission_projects:
 dc_paper:
   grid:
     enable: true
+    max_project_build_year: 2024
     freeze_expansion: true
 
 solving:
