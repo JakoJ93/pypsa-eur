@@ -72,7 +72,30 @@ def scale_country_load(n: pypsa.Network, cfg: dict) -> None:
     )
 
 
+def cap_country_fleet(n: pypsa.Network, cfg: dict) -> None:
+    """Scale down existing plants of a carrier to a total capacity (e.g. KVBG path)."""
+    country = cfg["country"]
+    in_c = n.generators.bus.map(n.buses.country) == country
+    for carrier, gw in cfg.get("capacity_gw", {}).items():
+        gens = n.generators.index[in_c & (n.generators.carrier == carrier)]
+        total = n.generators.loc[gens, "p_nom"].sum()
+        if total <= gw * 1e3 or total == 0:
+            logger.info(
+                f"DC paper fleet: {country} {carrier} {total / 1e3:.1f} GW <= cap {gw} GW."
+            )
+            continue
+        factor = gw * 1e3 / total
+        for attr in ["p_nom", "p_nom_min", "p_nom_max"]:
+            n.generators.loc[gens, attr] *= factor
+        logger.info(
+            f"DC paper fleet: {country} {carrier} scaled from {total / 1e3:.1f} GW "
+            f"to {gw} GW."
+        )
+
+
 def apply_dc_paper_network_rules(n: pypsa.Network, horizon: int, cfg: dict) -> None:
     apply_grid_build_years(n, horizon, cfg.get("grid", {}))
     if cfg.get("demand"):
         scale_country_load(n, cfg["demand"])
+    if cfg.get("fleet"):
+        cap_country_fleet(n, cfg["fleet"])

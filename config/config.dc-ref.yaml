@@ -56,14 +56,19 @@ electricity:
   # (ANNAHMEN B4: DateOut >= 2030).
   powerplants_filter: "(DateOut >= 2030 or DateOut != DateOut) and (DateIn < 2026 or DateIn != DateIn)"
 
-# Absolute CO2 cap for the modelled power sector in 2030 (ANNAHMEN B2:
-# about -80 %, 297 Mt). The relative default refers to economy-wide 1990
-# emissions and would barely bind an electricity-only model.
+# CO2 as EU ETS price, no cap: 85 EUR/t, the EUA settlement of 2026-10-20 in
+# the Instrat series the workflow downloads. The absolute 297 Mt cap of
+# ANNAHMEN B2 gave a shadow price of only 17 EUR/t in the first run, so coal ran
+# ahead of gas (T-40, deviation from B2).
 co2_budget:
   relative: false
   upper:
-    # in Gt CO2 per year (add_co2limit), i.e. 297 Mt
-    2030: 0.297
+    2030:
+
+costs:
+  emission_prices:
+    enable: true
+    co2: 85.0
 
 load:
   # Load profile and level of 2024 (latest full year in the ENTSO-E data),
@@ -90,6 +95,13 @@ dc_paper:
     # and to DE only. PLACEHOLDER until the load is split by sector (gate 2).
     country: DE
     scaling_factor: 1.12
+  fleet:
+    # Coal exit path (KVBG): about 8 GW hard coal and 9 GW lignite at the end
+    # of 2030; the powerplantmatching DateOut values leave 31 GW in DE.
+    country: DE
+    capacity_gw:
+      coal: 8.0
+      lignite: 9.0
   res_floors:
     # Policy targets as minimum installed capacity in DE (ANNAHMEN A5, B3).
     enable: true
