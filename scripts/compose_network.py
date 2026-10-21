@@ -24,6 +24,7 @@ from scripts.add_electricity import (
     sanitize_locations,
 )
 from scripts.add_existing_baseyear import main as add_existing_capacities
+from scripts.dc_paper_network import apply_dc_paper_network_rules
 from scripts.prepare_network import (
     apply_co2_budget_constraints,
     apply_temporal_aggregation,
@@ -103,6 +104,11 @@ if __name__ == "__main__":
         apply_brownfield(
             n, n_previous, inputs, params, current_horizon, renewable_carriers
         )
+
+    # DC paper patch: grid build years and country load scaling (scripts/dc_paper_network.py)
+    apply_dc_paper_network_rules(
+        n, current_horizon, config.get("dc_paper", {})
+    )
 
     if foresight == "perfect":
         n = prepare_perfect_foresight(n, n_previous, params, current_horizon)

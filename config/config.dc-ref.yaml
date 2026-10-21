@@ -1,0 +1,98 @@
+# SPDX-FileCopyrightText: Contributors to PyPSA-Eur <https://github.com/pypsa/pypsa-eur>
+#
+# SPDX-License-Identifier: CC0-1.0
+#
+# DC paper: reference setup without additional data centres (vault T-40, DEC-18).
+# Best-guess choices, each mirrored with Jakob afterwards and recorded in the
+# vault ANNAHMEN register. Everything not set here is the PyPSA-Eur v2026.09.0
+# default.
+#
+# Usage, from pypsa-eur/:
+#   pixi run snakemake -call --configfile config/config.dc-ref.yaml
+
+run:
+  name: dc-ref
+
+# Brownfield from today's stock: myopic foresight with 2030 as the base year,
+# i.e. the existing fleet (as of 2025) that survives to 2030 plus endogenous
+# new capacity at 2030 costs. A 2025 step was dropped: it would need a
+# realistic 2025 CO2 constraint and adds little for 2030 (memo gate 3).
+# Electricity-only (memo gate 2). The v2026.09.0 default is sector-coupled.
+sector:
+  enabled: false
+
+foresight: myopic
+planning_horizons:
+- 2030
+
+# Weather year 2013: PyPSA-Eur default and the year most PyPSA studies use;
+# a second weather year comes as robustness (T-26).
+snapshots:
+  start: "2013-01-01"
+  end: "2014-01-01"
+  inclusive: left
+
+clustering:
+  cluster_network:
+    # About 30 nodes in Germany (as PyPSA-DE), the rest of Europe coarser.
+    n_clusters: 75
+  focus_weights:
+    DE: 0.4
+  temporal:
+    # Uniform 3-hourly averaging, as in the PyPSA-group studies (T-32).
+    averaging: 3h
+
+electricity:
+  # Existing plants in operation in 2025 that are still running in 2030
+  # (ANNAHMEN B4: DateOut >= 2030).
+  powerplants_filter: "(DateOut >= 2030 or DateOut != DateOut) and (DateIn < 2026 or DateIn != DateIn)"
+
+# Absolute CO2 cap for the modelled power sector in 2030 (ANNAHMEN B2:
+# about -80 %, 297 Mt). The relative default refers to economy-wide 1990
+# emissions and would barely bind an electricity-only model.
+co2_budget:
+  relative: false
+  upper:
+    2030: 2.97e+8
+
+load:
+  # Load profile and level of 2024 (latest full year in the ENTSO-E data),
+  # mapped onto the 2013 weather-year snapshots; contains today's data centres.
+  fixed_year: 2024
+
+transmission_projects:
+  # Planned HVDC links enter with their project capacity once built
+  # (build year enforced by dc_paper: grid below).
+  new_link_capacity: keep
+
+dc_paper:
+  grid:
+    # Projects with build_year after the horizon are inactive (PyPSA-DE rule).
+    enable: true
+    # No endogenous grid expansion in the reference; expansion is a sensitivity.
+    freeze_expansion: true
+  demand:
+    # Electrification of DE up to 2030 on top of the 2024 load (heat pumps,
+    # EVs, electrolysis): factor of ANNAHMEN B7, now applied to the 2024 level
+    # and to DE only. PLACEHOLDER until the load is split by sector (gate 2).
+    country: DE
+    scaling_factor: 1.12
+  res_floors:
+    # Policy targets as minimum installed capacity in DE (ANNAHMEN A5, B3).
+    enable: true
+    country: DE
+    targets_gw:
+      solar: 215
+      onwind: 115
+      offwind: 14
+
+solving:
+  options:
+    custom_extra_functionality: ../scripts/dc_paper/custom_extra_functionality.py
+  solver:
+    name: gurobi
+    options: gurobi-default
+  solver_options:
+    gurobi-default:
+      # Shared server (EWISTS01): leave headroom for other users.
+      threads: 16
