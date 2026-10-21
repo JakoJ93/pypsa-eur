@@ -1,0 +1,94 @@
+# SPDX-FileCopyrightText: Contributors to PyPSA-Eur <https://github.com/pypsa/pypsa-eur>
+#
+# SPDX-License-Identifier: CC0-1.0
+#
+# DC paper: dispatch backcast of 2024 with the actual fleet (vault T-41).
+# Same spatial and temporal resolution and grid rules as config.dc-ref.yaml;
+# dispatch settings follow config/examples/config.validation.yaml (historical
+# fuel and CO2 prices, no expansion, load shedding as a feasibility guard).
+#
+# Usage, from pypsa-eur/:
+#   pixi run snakemake -call --configfile config/config.dc-backcast2024.yaml
+
+run:
+  name: dc-backcast-2024
+
+sector:
+  enabled: false
+
+foresight: overnight
+planning_horizons:
+- 2024
+
+snapshots:
+  start: "2024-01-01"
+  end: "2025-01-01"
+  inclusive: left
+
+atlite:
+  default_cutout: europe-2024-sarah3-era5
+
+clustering:
+  cluster_network:
+    n_clusters: 75
+  focus_weights:
+    DE: 0.4
+  temporal:
+    averaging: 3h
+
+# No CO2 cap: emissions are priced with the historical EUA price instead.
+co2_budget:
+  relative: false
+  upper:
+
+electricity:
+  transmission_limit: v1.0
+  extendable_carriers:
+    Generator: []
+    StorageUnit: []
+    Store: []
+    Link: []
+  # Fleet in operation during 2024.
+  powerplants_filter: "(DateOut >= 2024 or DateOut != DateOut) and (DateIn <= 2024 or DateIn != DateIn)"
+  estimate_renewable_capacities:
+    enable: true
+    from_powerplantmatching: true
+    # Country totals from IRENASTAT 2024; the default (powerplantmatching only)
+    # gives about 49 GW PV in DE instead of about 90 GW (memo T-39A).
+    from_irenastat: true
+    year: 2024
+
+renewable:
+  hydro:
+    flatten_dispatch: true
+    flatten_dispatch_buffer: 0.01
+
+conventional:
+  dynamic_fuel_price: true
+  biomass:
+    p_max_pu: 0.65
+
+costs:
+  year: 2025
+  emission_prices:
+    enable: true
+    dynamic: true
+
+transmission_projects:
+  new_link_capacity: keep
+
+dc_paper:
+  grid:
+    enable: true
+    freeze_expansion: true
+
+solving:
+  options:
+    load_shedding:
+      enable: true
+  solver:
+    name: gurobi
+    options: gurobi-default
+  solver_options:
+    gurobi-default:
+      threads: 16

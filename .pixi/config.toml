@@ -4,6 +4,10 @@
 
 pinning-strategy = "latest-up"
 
+# DC paper (EWISTS01): keep the environment on a local path without spaces;
+# Snakemake on Windows cannot start python from the UNC project path.
+detached-environments = 'C:\Users\Junkermannj\pixi-envs-v2609'
+
 # This aligns with default `conda` behaviour.
 # Set to "false" to stop post-link scripts from running.
 run-post-link-scripts = "insecure"
