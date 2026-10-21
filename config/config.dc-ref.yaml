@@ -98,6 +98,12 @@ renewable:
   solar-hsat:
     correction_factor: 0.89
 
+conventional:
+  # Biomass availability as in the validation config; reproduces 2024 biomass
+  # output within 1 % in the backcast (T-41).
+  biomass:
+    p_max_pu: 0.65
+
 transmission_projects:
   # Planned HVDC links enter with their project capacity once built
   # (build year enforced by dc_paper: grid below).
@@ -114,10 +120,12 @@ dc_paper:
     freeze_expansion: true
   demand:
     # Electrification of DE up to 2030 on top of the 2024 load (heat pumps,
-    # EVs, electrolysis): factor of ANNAHMEN B7, now applied to the 2024 level
-    # and to DE only. PLACEHOLDER until the load is split by sector (gate 2).
+    # EVs, electrolysis). 1.22 x 464 TWh = 566 TWh net, about 610 TWh gross:
+    # lower end of the 600-700 TWh corridor of the 2025 monitoring report
+    # (ANNAHMEN F13; 1.12 of row B7 gave about 570 TWh gross, below it).
+    # PLACEHOLDER until the load is split by sector (gate 2).
     country: DE
-    scaling_factor: 1.12
+    scaling_factor: 1.22
   fleet:
     # Coal exit path (KVBG): about 8 GW hard coal and 9 GW lignite at the end
     # of 2030; the powerplantmatching DateOut values leave 31 GW in DE.
