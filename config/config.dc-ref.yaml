@@ -62,7 +62,8 @@ electricity:
 co2_budget:
   relative: false
   upper:
-    2030: 2.97e+8
+    # in Gt CO2 per year (add_co2limit), i.e. 297 Mt
+    2030: 0.297
 
 load:
   # Load profile and level of 2024 (latest full year in the ENTSO-E data),
