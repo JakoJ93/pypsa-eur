@@ -1,0 +1,17 @@
+# SPDX-FileCopyrightText: Contributors to PyPSA-Eur <https://github.com/pypsa/pypsa-eur>
+#
+# SPDX-License-Identifier: CC0-1.0
+#
+# DC paper: spatial convergence test (vault T-42/T-26). Layered on top of
+# config.dc-ref.yaml; only the run name and the number of clusters change
+# (focus weight DE 0.4 as in the reference, about 100 nodes in DE).
+#
+# Usage, from pypsa-eur/:
+#   pixi run snakemake --configfile config/config.dc-ref.yaml config/config.dc-res-de100.yaml -c 8
+
+run:
+  name: dc-res-de100
+
+clustering:
+  cluster_network:
+    n_clusters: 250
